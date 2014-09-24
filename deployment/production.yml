@@ -1,0 +1,19 @@
+---
+- hosts: ssqdos-prod
+
+  vars:
+    # prudentia_dir -> is passed in the cmd line
+    - root_dir: ..
+
+    - api_upstart_name: ssqdos-prod-api
+
+  vars_files:
+    - '{{prudentia_dir}}/vars/global.yml'
+
+  tasks:
+    - include: '{{prudentia_dir}}/tasks/common-setup.yml'
+
+    - include: '{{prudentia_dir}}/tasks/git.yml'
+    - include: '{{prudentia_dir}}/tasks/nodejs.yml'
+    - include: '{{prudentia_dir}}/tasks/mongodb.yml'
+
