@@ -6,6 +6,7 @@
     - root_dir: ..
 
     - api_upstart_name: ssqdos-prod-api
+    - install_dir_server: /home/ssq/dos
 
   vars_files:
     - '{{prudentia_dir}}/vars/global.yml'
@@ -17,3 +18,26 @@
     - include: '{{prudentia_dir}}/tasks/nodejs.yml'
     - include: '{{prudentia_dir}}/tasks/mongodb.yml'
 
+    - name: Checkout git repo with DemocracyOS
+      git: repo=https://github.com/StarterSquad/app.git dest={{install_dir_server}} version=master
+      tags: update
+
+    - name: Copy configuration for DemocracyOS
+      copy: src='{{root_dir}}/deployment/files/prod.json' dest={{install_dir_server}}/config/production.json
+      tags: update
+
+    - name: Setup DemocracyOS
+      shell: chdir={{install_dir_server}} NODE_ENV=production /bin/bash -lc '/usr/bin/make'
+      tags: install
+
+    - name: Copy upstart for DemocracyOS
+      template: src='{{root_dir}}/deployment/files/upstart.conf' dest=/etc/init/{{api_upstart_name}}.conf
+      sudo: yes
+      tags: update
+
+    - name: Server | Restart
+      service: name={{api_upstart_name}} state=restarted
+      sudo: yes
+      tags:
+        - server
+        - update
